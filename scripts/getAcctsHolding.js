@@ -95,7 +95,7 @@ async function getAcctsHoldingArb(node2) {
     console.log("myRootHash", accts);
 }
 
-getAcctsHoldingArb(process.env.NODE_URL_OPTIMISM)
+getAcctsHoldingArb(process.env.NODE_URL_ARBITRUM)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);
