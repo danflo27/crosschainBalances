@@ -52,17 +52,26 @@ class Snapshot2 {
       y += _shift
       console.log("Getting up to block: ",y)
     }
-    let key;
+    let key, totalBal, balanceSum;
     let accountList = [];
+    let balances = [];
     console.log("getting balances..")
       // set provider for all later instances to use
       await this.contract2.setProvider(this.node2);
     for (key in accountMap){
       let bal = await this.contract2.methods.balanceOf(key).call({}, blockNumber);
+      bal = bal / 1e18;
       if(bal > 0){
+        balances.push(bal);
         balanceMap[key] = bal;
         accountList.push(key);
       }
+      const initialValue = 0;
+      balanceSum = balances.reduce(
+        (accumulator, currentValue) => accumulator + currentValue,
+        initialValue
+      );
+      balanceMap[key] = bal/balanceSum;
     }     
     return {accountList, balanceMap};
   }
