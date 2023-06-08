@@ -71,13 +71,7 @@ class Snapshot2 {
      for (key in accountMap){
       let bal = await this.contract2.methods.balanceOf(key).call({}, blockNumber);
       bal = bal / 1e18;
-      Object.defineProperties(powerMap, {
-        property1: {
-        value: key,
-        },
-        property2: {
-        value: bal/totalBalance;
-        }
+      powerMap[key] = (bal/totalBal);
       });
     }     
     return {accountList, balanceMap};
