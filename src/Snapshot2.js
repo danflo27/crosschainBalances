@@ -29,7 +29,8 @@ class Snapshot2 {
 
   async getAccountList(blockNumber){
     let accountMap = {};
-    let balanceMap = {}
+    let balanceMap = {};
+    let powerMap = {};
     let y = 0;
     let _shift = 25000
     let _toBlock;
@@ -62,16 +63,22 @@ class Snapshot2 {
       let bal = await this.contract2.methods.balanceOf(key).call({}, blockNumber);
       bal = bal / 1e18;
       if(bal > 0){
-        balances.push(bal);
         balanceMap[key] = bal;
         accountList.push(key);
-      }
-      const initialValue = 0;
-      balanceSum = balances.reduce(
-        (accumulator, currentValue) => accumulator + currentValue,
-        initialValue
+     }
+     let totalBalance = Object.values(balanceMap).reduce((a, b) => a + b, 0);
       );
-      balanceMap[key] = bal/balanceSum;
+     for (key in accountMap){
+      let bal = await this.contract2.methods.balanceOf(key).call({}, blockNumber);
+      bal = bal / 1e18;
+      Object.defineProperties(powerMap, {
+        property1: {
+        value: key,
+        },
+        property2: {
+        value: bal/totalBalance;
+        }
+      });
     }     
     return {accountList, balanceMap};
   }
