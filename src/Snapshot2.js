@@ -72,7 +72,8 @@ class Snapshot2 {
       let bal = await this.contract2.methods.balanceOf(key).call({}, blockNumber);
       bal = bal / 1e18;
       powerMap[key] = (bal/totalBal);
-      });
+      // powerMap.set(Object.keys(balanceMap), Object.values(balanceMap)/totalBal);
+      };
     }     
     return {accountList, balanceMap};
   }
