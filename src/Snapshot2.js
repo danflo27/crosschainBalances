@@ -2,6 +2,8 @@ const Web3 = require('web3')
 const Web3_2 = require('web3')
 const ERC20 = require('../artifacts/contracts/helpers/ERC20.sol/ERC20.json')
 const ERC20Snapshot = require('../artifacts/contracts/CCBalances.sol/CCBalances.json')
+const TellorFlex = require('../artifacts/contracts/TellorFlex.sol/TellorFlex.json')
+//const Autopay = require("")
 
 const MerkleTree = require("./MerkleTree")
 
@@ -11,13 +13,15 @@ function sleep(ms) {
 
 class Snapshot2 {
 
-  constructor(address, blockNumber, web3, node2){
+  constructor(address, blockNumber, web3, node2) {
     this.target = address; // contract address
-    this.blockNumber = blockNumber; // block number contract was deployed.
+    this.blockNumber = blockNumber; // block number contract was deployed 
     this.web3 = web3;
     this.web2 = web3;
     this.contract2 = new this.web2.eth.Contract(ERC20.abi, this.target);
     this.contract = new this.web3.eth.Contract(ERC20.abi, this.target);
+    this.tellorFlexContract = new this.web3.eth.Contract(TellorFlex.abi, this.target);
+    //this.autopayContract = new this.web3.eth.Contract(Autopay.abi, this.target);
     this.node2 = node2;
     this.MerkleTree = new MerkleTree(web3);
     this.data = {};
@@ -27,23 +31,25 @@ class Snapshot2 {
     this.snapshot = new this.web3.eth.Contract(ERC20Snapshot.abi, target);
   }
 
-  async getAccountList(blockNumber){
+  // Get list of token holders and their percentage of total token supply 
+  async getTokenHolders(blockNumber) {
     let accountMap = {};
     let balanceMap = {};
     let powerMap = {};
     let y = 0;
     let _shift = 25000
     let _toBlock;
-    let acc
-    while(y < blockNumber){
+    // scan blocks for transfer event
+    while (y < blockNumber) {
       _toBlock = y + _shift
-      if(_toBlock > blockNumber){
+      if (_toBlock > blockNumber) {
         _toBlock = blockNumber
       }
       await this.contract.getPastEvents("Transfer", {
-        fromBlock:y,
+        fromBlock: y,
         toBlock: _toBlock,
-      }).then(function(evtData){
+      }).then(function (evtData) {
+        // make array of addresses that have received tokens
         let index;
         for (index in evtData) {
           let evt = evtData[index];
@@ -51,36 +57,153 @@ class Snapshot2 {
         }
       });
       y += _shift
-      console.log("Getting up to block: ",y)
+      console.log("Getting up to block: ", y)
     }
-    let key, totalBal, balanceSum;
+
+    let key;
     let accountList = [];
-    let balances = [];
+    let balance;
     console.log("getting balances..")
-      // set provider for all later instances to use
-      await this.contract2.setProvider(this.node2);
-    for (key in accountMap){
-      let bal = await this.contract2.methods.balanceOf(key).call({}, blockNumber);
-      bal = bal / 1e18;
-      if(bal > 0){
-        balanceMap[key] = bal;
+    // set provider for all later instances to use
+    await this.contract2.setProvider(this.node2);
+    // get the token balance of everyone thats received tokens 
+    for (key in accountMap) {
+      balance = await this.contract2.methods.balanceOf(key).call({}, blockNumber);
+      balance = balance / 1e18;
+      // connect address to token balance { address : balance}
+      if (balance > 0) {
         accountList.push(key);
-     }
-     let totalBalance = Object.values(balanceMap).reduce((a, b) => a + b, 0);
-      );
-     for (key in accountMap){
-      let bal = await this.contract2.methods.balanceOf(key).call({}, blockNumber);
-      bal = bal / 1e18;
-      powerMap[key] = (bal/totalBal);
-      // powerMap.set(Object.keys(balanceMap), Object.values(balanceMap)/totalBal);
-      };
-    }     
-    return {accountList, balanceMap};
+        balanceMap[key] = balance;
+        powerMap[key] = balance;
+      }
+    }
+    let totalBalance = Object.values(balanceMap).reduce((a, b) => a + b, 0);
+    let numberOfHolders = Object.keys(balanceMap).length;
+
+    for (key in balanceMap) {
+      powerMap[key] = ((powerMap[key] / totalBalance) * 100).toFixed(3) + "% of token holder vote";
+    }
+    return { numberOfHolders, totalBalance, powerMap };
   }
 
+  // Gets list of reporters and their percentage of total reports
+  async getReporters(blockNumber) {
+    let accountMap = {};
+    let reportMap = {};
+    let powerMap = {};
+    let y = 0;
+    let _shift = 25000
+    let _toBlock;
+    let acc
+    while (y < blockNumber) {
+      _toBlock = y + _shift
+      if (_toBlock > blockNumber) {
+        _toBlock = blockNumber
+      }
+      // scan blocks for reports
+      await this.tellorFlexContract.getPastEvents("NewReport", {
+        fromBlock: y,
+        toBlock: _toBlock,
+      }).then(function (evtData) {
+        // make array of addresses that have reported
+        let index;
+        for (index in evtData) {
+          let evt = evtData[index];
+          accountMap[evt.returnValues._reporter] = true;
+        }
+      });
+      y += _shift
+      console.log("Getting up to block: ", y)
+    }
+
+    let key;
+    let accountList = [];
+    let reports;
+    console.log("getting reports..")
+    // set provider for all later instances to use
+    await this.tellorFlexContract.setProvider(this.node2);
+    for (key in accountMap) {
+      // get number of reports by reporter
+      reports = await this.tellorFlexContract.methods.getReportsSubmittedByAddress(key).call({}, blockNumber);
+      // connect address to number of reports { address : number of reports}
+      if (reports > 0) {
+        accountList.push(key);
+        reportMap[key] = Number(reports);
+        powerMap[key] = Number(reports);
+
+      }
+    }
+    let totalReports = Object.values(reportMap).reduce((a, b) => a + b, 0);
+    let numberOfReporters = Object.keys(reportMap).length;
+
+    for (key in reportMap) {
+      powerMap[key] = ((powerMap[key] / totalReports) * 100).toFixed(3) + "% of token holder vote";
+    }
+    return { numberOfReporters, totalReports, powerMap };
+
+  }
+
+  // Gets list of users and their percentage of total tips
+  async getUsers(blockNumber) {
+    let accountMap = {};
+    let reportMap = {};
+    let powerMap = {};
+    let y = 0;
+    let _shift = 25000
+    let _toBlock;
+    let acc
+    while (y < blockNumber) {
+      _toBlock = y + _shift
+      if (_toBlock > blockNumber) {
+        _toBlock = blockNumber
+      }
+      // scan blocks for users
+      await this.autopayContract.getPastEvents("DataFeedFunded", {
+        fromBlock: y,
+        toBlock: _toBlock,
+      }).then(function (evtData) {
+        // make array of addresses that have tipped
+        let index;
+        for (index in evtData) {
+          let evt = evtData[index];
+          accountMap[evt.returnValues._reporter] = true;
+        }
+      });
+      y += _shift
+      console.log("Getting up to block: ", y)
+    }
+
+    let key;
+    let accountList = [];
+    let users;
+    console.log("getting users..")
+    // set provider for all later instances to use
+    await this.autopayContract.setProvider(this.node2);
+    for (key in accountMap) {
+      // get number of tips by user
+      users = await this.autopayContract.methods.getTipsByAddress(key).call({}, blockNumber); // put with get balance 
+      // connect address to number of reports { address : number of reports}
+      if (reports > 0) {
+        accountList.push(key);
+        reportMap[key] = Number(reports);
+        powerMap[key] = Number(reports);
+
+      }
+    }
+    let totalReports = Object.values(reportMap).reduce((a, b) => a + b, 0);
+    let numberOfReporters = Object.keys(reportMap).length;
+
+    for (key in reportMap) {
+      powerMap[key] = ((powerMap[key] / totalReports) * 100).toFixed(3) + "% of token holder vote";
+    }
+    return { numberOfReporters, totalReports, powerMap };
+
+  }
+// log top 20 
+
   getSortedAccounts(accountList) {
-    let sorted = accountList.sort(function(account1, account2){
-      if (account1.toLowerCase() < account2.toLowerCase()){
+    let sorted = accountList.sort(function (account1, account2) {
+      if (account1.toLowerCase() < account2.toLowerCase()) {
         return -1;
       } else {
         return 1;
@@ -92,7 +215,7 @@ class Snapshot2 {
   getHashList(sortedAccountList, balanceMap) {
     let hashList = [];
     let key;
-    for (key in sortedAccountList){
+    for (key in sortedAccountList) {
       let account = sortedAccountList[key];
       let balance = balanceMap[account];
       let hash = this.MerkleTree.getHash(account, balance);
@@ -107,17 +230,17 @@ class Snapshot2 {
   }
 
   async setupData(blockNumber) {
-    if (this.data[blockNumber]){
+    if (this.data[blockNumber]) {
       return;
     }
     let accounts = await this.getAccountList(blockNumber);
-    let sorted =  this.getSortedAccounts(accounts.accountList);
+    let sorted = this.getSortedAccounts(accounts.accountList);
     let hashList = this.getHashList(sorted, accounts.balanceMap);
     let root = this.MerkleTree.getRoot(hashList);
     this.data[blockNumber] = {
       //accountList: accountList,
-      sortedAccountList: sorted, 
-      balanceMap: accounts.balanceMap, 
+      sortedAccountList: sorted,
+      balanceMap: accounts.balanceMap,
       hashList: hashList,
       merkleRoot: root
     }
@@ -129,7 +252,7 @@ class Snapshot2 {
     let data = this.data[blockNumber];
     for (key in data.sortedAccountList) {
       let acct = data.sortedAccountList[key];
-      if (acct == account){
+      if (acct == account) {
         index = key;
         break;
       }
