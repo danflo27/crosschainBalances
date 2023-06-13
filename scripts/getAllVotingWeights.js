@@ -17,3 +17,4 @@ require("dotenv").config();
 const autoPayAddress = "0x9BE9B0CFA89Ea800556C6efbA67b455D336db1D0";
 const oracleAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0";
 const tokenAddress = "0xe3322702bedaaed36cddab233360b939775ae5f1" // polygon
+//const tokenAddress = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0" // mainnet
