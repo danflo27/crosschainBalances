@@ -14,4 +14,5 @@ const GetUsers = require("./GetReporters.js")
 const GetTokenHolders = require("./GetReporters.js")
 require("dotenv").config();
 
-const autoPayAddress = "0x9BE9B0CFA89Ea800556C6efbA67b455D336db1D0"
+const autoPayAddress = "0x9BE9B0CFA89Ea800556C6efbA67b455D336db1D0";
+const oracleAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0";
