@@ -3,7 +3,7 @@ const Web3_2 = require('web3')
 const ERC20 = require('../artifacts/contracts/helpers/ERC20.sol/ERC20.json')
 const ERC20Snapshot = require('../artifacts/contracts/CCBalances.sol/CCBalances.json')
 const TellorFlex = require('../artifacts/contracts/TellorFlex.sol/TellorFlex.json')
-//const Autopay = require("")
+const Autopay = require('../artifacts/contracts/Autopay.sol/Autopay.json')
 
 const MerkleTree = require("./MerkleTree")
 
@@ -21,7 +21,7 @@ class Snapshot2 {
     this.contract2 = new this.web2.eth.Contract(ERC20.abi, this.target);
     this.contract = new this.web3.eth.Contract(ERC20.abi, this.target);
     this.tellorFlexContract = new this.web3.eth.Contract(TellorFlex.abi, this.target);
-    //this.autopayContract = new this.web3.eth.Contract(Autopay.abi, this.target);
+    this.autopayContract = new this.web3.eth.Contract(Autopay.abi, this.target);
     this.node2 = node2;
     this.MerkleTree = new MerkleTree(web3);
     this.data = {};
@@ -94,7 +94,6 @@ class Snapshot2 {
     let y = 0;
     let _shift = 25000
     let _toBlock;
-    let acc
     while (y < blockNumber) {
       _toBlock = y + _shift
       if (_toBlock > blockNumber) {
@@ -146,12 +145,11 @@ class Snapshot2 {
   // Gets list of users and their percentage of total tips
   async getUsers(blockNumber) {
     let accountMap = {};
-    let reportMap = {};
+    let tipMap = {};
     let powerMap = {};
     let y = 0;
     let _shift = 25000
     let _toBlock;
-    let acc
     while (y < blockNumber) {
       _toBlock = y + _shift
       if (_toBlock > blockNumber) {
@@ -166,7 +164,15 @@ class Snapshot2 {
         let index;
         for (index in evtData) {
           let evt = evtData[index];
-          accountMap[evt.returnValues._reporter] = true;
+          accountMap[evt.returnValues._feedFunder] = true;
+        }
+      });
+        await this.autopayContract.getPastEvents("TipAdded", {
+          fromBlock: y,
+          toBlock: _toBlock,
+        }).then(function (evtData) {
+          let evt = evtData[index];
+          accountMap[evt.returnValues._tipper] = true;
         }
       });
       y += _shift
@@ -175,28 +181,27 @@ class Snapshot2 {
 
     let key;
     let accountList = [];
-    let users;
-    console.log("getting users..")
+    let tips;
+    console.log("getting tippers..")
     // set provider for all later instances to use
     await this.autopayContract.setProvider(this.node2);
     for (key in accountMap) {
       // get number of tips by user
-      users = await this.autopayContract.methods.getTipsByAddress(key).call({}, blockNumber); // put with get balance 
-      // connect address to number of reports { address : number of reports}
-      if (reports > 0) {
+      tips = await this.autopayContract.methods.getTipsByAddress(key).call({}, blockNumber); // put with get balance 
+      // connect address to number of tips { address : number of tips}
+      if (tips > 0) {
         accountList.push(key);
-        reportMap[key] = Number(reports);
-        powerMap[key] = Number(reports);
-
+        tipMap[key] = Number(tips);
+        powerMap[key] = Number(tips);
       }
     }
-    let totalReports = Object.values(reportMap).reduce((a, b) => a + b, 0);
-    let numberOfReporters = Object.keys(reportMap).length;
+    let totalTips = Object.values(tipMap).reduce((a, b) => a + b, 0);
+    let numberOfUsers = Object.keys(tipMap).length;
 
-    for (key in reportMap) {
-      powerMap[key] = ((powerMap[key] / totalReports) * 100).toFixed(3) + "% of token holder vote";
+    for (key in tipMap) {
+      powerMap[key] = ((powerMap[key] / totalTips) * 100).toFixed(3) + "% of token holder vote";
     }
-    return { numberOfReporters, totalReports, powerMap };
+    return { numberOfUsers, totalTips, powerMap };
 
   }
 // log top 20 
