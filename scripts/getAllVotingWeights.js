@@ -9,9 +9,9 @@ const assert = require('chai').assert
 const MerkleTreeJS = require("../src/MerkleTree")
 const MerkleTree = new MerkleTreeJS(Web3)
 const Snapshot2 = require("../src/Snapshot2")
-const GetReporters = require("./GetReporters.js")
-const GetUsers = require("./GetReporters.js")
-const GetTokenHolders = require("./GetReporters.js")
+const getReporters = require("./getReporters.js")
+const getUsers = require("./getReporters.js")
+const getTokenHolders = require("./getReporters.js")
 require("dotenv").config();
 
 const autoPayAddress = "0x9BE9B0CFA89Ea800556C6efbA67b455D336db1D0";
@@ -21,14 +21,14 @@ const tokenAddress = "0xe3322702bedaaed36cddab233360b939775ae5f1" // polygon
 
 async function getAllVotes(node2) {
     const newestBlock = await web3.eth.getBlockNumber()
-    Reports = new Snapshot2(oracleAddress, newestBlock, web3, node2);
-    Holders = new Snapshot2(tokenAddress, newestBlock, web3, node2);
-    Users = new Snapshot2(autoPayAddress, newestBlock, web3, node2);
-    let reporters = await Reports.getReporters(newestBlock);
-    let holders = await Holders.getTokenHolders(newestBlock);
-    let users = await Users.getUsers(newestBlock);
+    let Reports = new Snapshot2(oracleAddress, newestBlock, web3, node2);
+    let Holders = new Snapshot2(tokenAddress, newestBlock, web3, node2);
+    let Users = new Snapshot2(autoPayAddress, newestBlock, web3, node2);
+    let reporterList = await Reports.getReporters(newestBlock);
+    let holderList = await Holders.getTokenHolders(newestBlock);
+    let userList = await Users.getUsers(newestBlock);
     console.log("blockNumber", newestBlock);
-    console.log("voting stats", holders, users, reporters);
+    console.log("voting stats", holderList, userList, reporterList);
 }
 
 
