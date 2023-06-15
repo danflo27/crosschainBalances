@@ -33,18 +33,16 @@ class Snapshot2 {
 
   // Get list of token holders and their percentage of total token supply 
   async getTokenHolders(blockNumber) {
-    let accountMap = {};
-    let balanceMap = {};
-    let powerMap = {};
+    let accountMap = balanceMap = {};
     let y = 0;
     let _shift = 25000
     let _toBlock;
-    // scan blocks for transfer event
+    // scan blocks 
     while (y < blockNumber) {
       _toBlock = y + _shift
       if (_toBlock > blockNumber) {
         _toBlock = blockNumber
-      }
+      } // look for transfer events 
       await this.contract.getPastEvents("Transfer", {
         fromBlock: y,
         toBlock: _toBlock,
@@ -60,9 +58,8 @@ class Snapshot2 {
       console.log("Getting up to block: ", y)
     }
 
-    let key;
+    let key, balance;
     let accountList = [];
-    let balance;
     console.log("getting balances..")
     // set provider for all later instances to use
     await this.contract2.setProvider(this.node2);
@@ -70,20 +67,23 @@ class Snapshot2 {
     for (key in accountMap) {
       balance = await this.contract2.methods.balanceOf(key).call({}, blockNumber);
       balance = balance / 1e18;
-      // connect address to token balance { address : balance}
+      // make map { address : balance}
       if (balance > 0) {
         accountList.push(key);
         balanceMap[key] = balance;
-        powerMap[key] = balance;
       }
     }
-    let totalBalance = Object.values(balanceMap).reduce((a, b) => a + b, 0);
-    let numberOfHolders = Object.keys(balanceMap).length;
+    let totalBalance, numberOfHolders, array, top20;
+    totalBalance = Object.values(balanceMap).reduce((a, b) => a + b, 0);
+    numberOfHolders = Object.keys(balanceMap).length;
+    array = Object.entries(balanceMap);      
+    array = array.sort((a, b) => a[1] + b[1]);
+    top20 = Object.fromEntries(list);
 
-    for (key in balanceMap) {
-      powerMap[key] = ((powerMap[key] / totalBalance) * 100).toFixed(3) + "% of token holder vote";
+    for (key in top20) {
+      top20[key] = ((top20[key] / totalBalance) * 100).toFixed(3) + "% of token holder vote";
     }
-    return { numberOfHolders, totalBalance, powerMap };
+    return { numberOfHolders, totalBalance, top20 };
   }
 
   // Gets list of reporters and their percentage of total reports
@@ -156,28 +156,21 @@ class Snapshot2 {
         _toBlock = blockNumber
       }
       // scan blocks for users
-      await this.autopayContract.getPastEvents("DataFeedFunded", {
-        fromBlock: y,
-        toBlock: _toBlock,
-      }).then(function (evtData) {
-        // make array of addresses that have tipped
-        let index;
-        for (index in evtData) {
-          let evt = evtData[index];
-          accountMap[evt.returnValues._feedFunder] = true;
-        }
-      });
         await this.autopayContract.getPastEvents("TipAdded", {
           fromBlock: y,
           toBlock: _toBlock,
         }).then(function (evtData) {
-          let evt = evtData[index];
-          accountMap[evt.returnValues._tipper] = true;
+          // create array of addresses that have added a tip
+          let index;
+          for (index in evtData) {
+            let evt = evtData[index];
+            accountMap1[evt.returnValues._tipper] = true;
         }
       });
       y += _shift
       console.log("Getting up to block: ", y)
     }
+    console.log(accountMap1);
 
     let key;
     let accountList = [];
