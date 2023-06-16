@@ -86,7 +86,8 @@ class Snapshot2 {
     for (key in top20) {
       top20[key] = ((top20[key] / totalBalance) * 100).toFixed(3) + "% of token holder vote";
     }
-    return { numberOfHolders, totalBalance, top20 };
+    console.table(top20);
+    return { numberOfHolders, totalBalance };
   }
 
 
@@ -144,8 +145,9 @@ class Snapshot2 {
     for (key in top20) {
       top20[key] = ((top20[key] / totalReports) * 100).toFixed(3) + "% of reporter vote";
     }
+    console.table(top20);
 
-    return { numberOfReporters, totalReports, top20 };
+    return { numberOfReporters, totalReports };
 
   }
 
@@ -215,7 +217,8 @@ class Snapshot2 {
     for (key in top20) {
       top20[key] = ((top20[key] / totalTips) * 100).toFixed(3) + "% of user vote";
     }
-    return { numberOfUsers, totalTips, top20 };
+    console.table(top20);
+    return { numberOfUsers, totalTips };
 
   }
 
@@ -281,5 +284,61 @@ class Snapshot2 {
     return proof;
   }
 }
+/* try to go array first 
+async getTokenHolders(blockNumber) {
+    let accountMap = [];
+    let balanceMap = {};
+    let y = 0;
+    let _shift = 25000
+    let _toBlock;
+    // scan blocks for transfer event
+    while (y < blockNumber) {
+      _toBlock = y + _shift
+      if (_toBlock > blockNumber) {
+        _toBlock = blockNumber
+      }
+      await this.contract.getPastEvents("Transfer", {
+        fromBlock: y,
+        toBlock: _toBlock,
+      }).then(function (evtData) {
+        // make array of addresses that have received tokens
+        let index;
+        for (index in evtData) {
+          let evt = evtData[index];
+          accountMap.push(evt.returnValues.to);
+        }
+      });
+      y += _shift
+      console.log("Getting up to block: ", y)
+    }
+
+    let key, balance;
+    //let accountList = [];
+    console.log("getting balances..")
+    // set provider for all later instances to use
+    await this.contract2.setProvider(this.node2);
+    // get the token balance of everyone thats received tokens 
+    for (key in accountMap) {
+      balance = await this.contract2.methods.balanceOf(key).call({}, blockNumber);
+      balance = balance / 1e18;
+      // make map { address : balance}
+      if (balance > 0) {
+        //accountList.push(key);
+        balanceMap[key] = balance;
+      }
+    }
+    let totalBalance, numberOfHolders, array, top20;
+    totalBalance = Object.values(balanceMap).reduce((a, b) => a + b, 0);
+    numberOfHolders = Object.keys(balanceMap).length;
+
+    array = Object.entries(balanceMap);
+    array = array.sort((a, b) => b[1] - a[1]).slice(0, 20);
+    top20 = Object.fromEntries(array);
+
+    for (key in top20) {
+      top20[key] = ((top20[key] / totalBalance) * 100).toFixed(3) + "% of token holder vote";
+    }
+    return { numberOfHolders, totalBalance, top20 };
+  }*/
 
 module.exports = Snapshot2;
