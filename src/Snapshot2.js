@@ -86,6 +86,7 @@ class Snapshot2 {
     for (key in top20) {
       top20[key] = ((top20[key] / totalBalance) * 100).toFixed(3) + "% of token holder vote";
     }
+    
     console.table(top20);
     return { numberOfHolders, totalBalance };
   }
@@ -146,7 +147,6 @@ class Snapshot2 {
       top20[key] = ((top20[key] / totalReports) * 100).toFixed(3) + "% of reporter vote";
     }
     console.table(top20);
-
     return { numberOfReporters, totalReports };
 
   }
@@ -284,10 +284,21 @@ class Snapshot2 {
     return proof;
   }
 }
-/* try to go array first 
-async getTokenHolders(blockNumber) {
-    let accountMap = [];
+
+// get all metrics
+async getAllWeights(blockNumber) { 
+    getTokenHolders(blockNumber);
+    getUsers(blockNumber);
+    getReporters(blockNumber);
+}
+/*
+async getAllWeights(blockNumber) {
+    let reportAccountMap = [];
+    let userAccountMap = [];
+    let holderAccountMap = [];
     let balanceMap = {};
+    let reportMap = {}; 
+    let userMap = {}; 
     let y = 0;
     let _shift = 25000
     let _toBlock;
@@ -297,6 +308,42 @@ async getTokenHolders(blockNumber) {
       if (_toBlock > blockNumber) {
         _toBlock = blockNumber
       }
+      // scan for new report event
+      await this.tellorFlexContract.getPastEvents("NewReport", {
+        fromBlock: y,
+        toBlock: _toBlock,
+      }).then(function (evtData) {
+        // make array of addresses that have reported
+        let index;
+        for (index in evtData) {
+          let evt = evtData[index];
+          reportAccountMap[evt.returnValues._reporter] = true;
+        }
+      });
+      // scan blocks for addresses that have added a tip
+      await this.autopayContract.getPastEvents("TipAdded", {
+        fromBlock: y,
+        toBlock: _toBlock,
+      }).then(function (evtData) {
+        // create array of addresses that have added a tip
+        let index;
+        for (index in evtData) {
+          let evt = evtData[index];
+          userAccountMap[evt.returnValues._tipper] = true;
+        }
+      });
+      // scan blocks for addresses that have funded a data feed
+      await this.autopayContract.getPastEvents("DataFeedFunded", {
+        fromBlock: y,
+        toBlock: _toBlock,
+      }).then(function (evtData) {
+        // add to array of addresses 
+        let index;
+        for (index in evtData) {
+          let evt = evtData[index];
+          userAccountMap[evt.returnValues._feedFunder] = true;
+        }
+      });
       await this.contract.getPastEvents("Transfer", {
         fromBlock: y,
         toBlock: _toBlock,
@@ -305,16 +352,16 @@ async getTokenHolders(blockNumber) {
         let index;
         for (index in evtData) {
           let evt = evtData[index];
-          accountMap.push(evt.returnValues.to);
+          holderAccountMap.push(evt.returnValues.to);
         }
       });
       y += _shift
       console.log("Getting up to block: ", y)
     }
 
-    let key, balance;
+    let key, balance, users, reports;
     //let accountList = [];
-    console.log("getting balances..")
+    console.log("getting metrics..")
     // set provider for all later instances to use
     await this.contract2.setProvider(this.node2);
     // get the token balance of everyone thats received tokens 
