@@ -5,7 +5,7 @@ const ERC20Snapshot = require('../artifacts/contracts/CCBalances.sol/CCBalances.
 const TellorFlex = require('../artifacts/contracts/TellorFlex.sol/TellorFlex.json')
 const Autopay = require('../artifacts/contracts/Autopay.sol/Autopay.json')
 
-const MerkleTree = require("./MerkleTree")
+//const MerkleTree = require("./MerkleTree")
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -334,3 +334,70 @@ class Weights {
     }
     console.table(userTop20);
   }
+
+
+  /*
+    getSortedAccounts(accountList) {
+      let sorted = accountList.sort(function (account1, account2) {
+        if (account1.toLowerCase() < account2.toLowerCase()) {
+          return -1;
+        } else {
+          return 1;
+        }
+      })
+      return sorted;
+    }
+  
+    getHashList(sortedAccountList, balanceMap) {
+      let hashList = [];
+      let key;
+      for (key in sortedAccountList) {
+        let account = sortedAccountList[key];
+        let balance = balanceMap[account];
+        let hash = this.MerkleTree.getHash(account, balance);
+        hashList.push(hash);
+      }
+      return hashList;
+    }
+  
+    async getRootHash(blockNumber) {
+      await this.setupData(blockNumber)
+      return this.data[blockNumber].merkleRoot;
+    }
+  
+    async setupData(blockNumber) {
+      if (this.data[blockNumber]) {
+        return;
+      }
+      let accounts = await this.getAccountList(blockNumber);
+      let sorted = this.getSortedAccounts(accounts.accountList);
+      let hashList = this.getHashList(sorted, accounts.balanceMap);
+      let root = this.MerkleTree.getRoot(hashList);
+      this.data[blockNumber] = {
+        //accountList: accountList,
+        sortedAccountList: sorted,
+        balanceMap: accounts.balanceMap,
+        hashList: hashList,
+        merkleRoot: root
+      }
+    }
+  
+    async getClaimTX(blockNumber, account) {
+      await this.setupData(blockNumber);
+      let index;
+      let data = this.data[blockNumber];
+      for (key in data.sortedAccountList) {
+        let acct = data.sortedAccountList[key];
+        if (acct == account) {
+          index = key;
+          break;
+        }
+      }
+      let hashList = this.data[blockNumber].hashList;
+      let proof = (this.MerkleTree.createProof(hashList, hashList[index]))
+      return proof;
+    }*/
+
+}
+
+module.exports = Weights;
