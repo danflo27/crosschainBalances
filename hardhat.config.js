@@ -11,11 +11,11 @@ require("dotenv").config();
  * @type import('hardhat/config').HardhatUserConfig
  */
 
- module.exports = {
+module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.9",
+        version: "0.8.3",
         settings: {
           optimizer: {
             enabled: true,
@@ -39,41 +39,35 @@ require("dotenv").config();
       // },
       allowUnlimitedContractSize: true
     },
-    rinkeby: {
-         url: `${process.env.NODE_URL_RINKEBY}`,
-         seeds: [process.env.PRIVATE_KEY],
-         gas: 10000000 ,
-         gasPrice: 40000000000
-    },
     mainnet: {
-         url: `https://tellor:bestoracle@itsaboomerang.net`,
-         gas: 3000000 ,
-         gasPrice: 300000000000
-       },
-    // polygon_testnet: {
-    //     url: `${process.env.NODE_URL_MUMBAI}`,
-    //     accounts: [process.env.TESTNET_PK],
-    //     gas: 10000000 ,
-    //     gasPrice: 50000000000
-    //   }
-    // polygon: {
-    //   url: `${process.env.NODE_URL_MATIC}`,
-    //   seeds: [process.env.PRIVATE_KEY],
-    //   gas: 2000000 ,
-    //   gasPrice: 250000000000
-    // }
-    // harmony_testnet: {
-    //   url: `${process.env.NODE_URL_HARMONY_TESTNET}`,
-    //   seeds: [process.env.TESTNET_PK],
-    //   gas: 2000000 ,
-    //   gasPrice: 250000000000
-    // }
-    // harmony_mainnet: {
-    //   url: `${process.env.NODE_URL_HARMONY_MAINNET}`,
-    //   seeds: [process.env.MAINNET_PK],
-    //   gas: 2000000 ,
-    //   gasPrice: 250000000000
-    // }
+      url: `${process.env.NODE_URL}`,
+      gas: 3000000,
+      gasPrice: 300000000000
+    },
+     polygon: {
+      url: `${process.env.NODE_URL_MATIC}`,
+      //seeds: [process.env.PRIVATE_KEY],
+      gas: 3000000,
+      gasPrice: 250000000000
+    },
+    gnosis: {
+      url: `${process.env.NODE_URL_GNOSIS}`,
+      //seeds: [process.env.PRIVATE_KEY],
+      gas: 3000000,
+      gasPrice: 250000000000
+    },
+    optimism: {
+      url: `${process.env.NODE_URL_OPTIMISM}`,
+      //seeds: [process.env.PRIVATE_KEY],
+      gas: 3000000,
+      gasPrice: 250000000000
+    },
+    arbitrum: {
+      url: `${process.env.NODE_URL_ARBITRUM}`,
+      //seeds: [process.env.PRIVATE_KEY],
+      gas: 3000000,
+      gasPrice: 250000000000
+    },
   },
   etherscan: {
     // Your API key for Etherscan
