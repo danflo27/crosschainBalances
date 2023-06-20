@@ -6,8 +6,6 @@ const { ethers } = require("hardhat")
 const { abi, bytecode } = require("usingtellor/artifacts/contracts/TellorPlayground.sol/TellorPlayground.json")
 const h = require("usingtellor/test/helpers/helpers.js")
 const assert = require('chai').assert
-const MerkleTreeJS = require("../src/MerkleTree")
-const MerkleTree = new MerkleTreeJS(Web3)
 const Weights = require("../src/Weights")
 require("dotenv").config();
 //npx hardhat run scripts/getReporters.js --network mainnet
