@@ -11,7 +11,7 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-class Snapshot2 {
+class Weights {
 
   constructor(address, blockNumber, web3, node2) {
     this.target = address; // contract address
