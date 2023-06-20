@@ -8,7 +8,7 @@ const h = require("usingtellor/test/helpers/helpers.js")
 const assert = require('chai').assert
 const MerkleTreeJS = require("../src/MerkleTree")
 const MerkleTree = new MerkleTreeJS(Web3)
-const Snapshot2 = require("../src/Snapshot2")
+const Weights = require("../src/Weights")
 import { getReporterList } from "./getReporters.js"
 import { getTokenHolderList } from "./getTokenHolders.js"
 import { getUserList } from "./getUsers.js"
