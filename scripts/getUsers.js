@@ -10,7 +10,7 @@ const Weights = require("../src/Weights")
 require("dotenv").config();
 //npx hardhat run scripts/getUsers.js --network mainnet
 
-const autopayAddress = "0x9BE9B0CFA89Ea800556C6efbA67b455D336db1D0" // polygon, mainnet, 
+const autopayAddress = "0x9BE9B0CFA89Ea800556C6efbA67b455D336db1D0" // all networks
 
 async function getUserList(node2) {
     const newestBlock = await web3.eth.getBlockNumber()
