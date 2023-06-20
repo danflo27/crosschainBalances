@@ -10,7 +10,7 @@ const Weights = require("../src/Weights")
 require("dotenv").config();
 //npx hardhat run scripts/getReporters.js --network mainnet
 
-const oracleAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
+const oracleAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0" // all networks
 
 async function getReporterList(node2) {
     const newestBlock = await web3.eth.getBlockNumber();
