@@ -21,7 +21,7 @@ async function getUserList(node2) {
     console.log("user stats", list);
 }
 
-// change NODE_URL_network
+// change to NODE_URL_network
 getUserList(process.env.NODE_URL_MATIC)
     .then(() => process.exit(0))
     .catch(error => {
