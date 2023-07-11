@@ -24,7 +24,7 @@ class Weights {
     this.tellorFlexContract = new this.web3.eth.Contract(TellorFlex.abi, this.target);
     this.autopayContract = new this.web3.eth.Contract(Autopay.abi, this.target);
     this.node2 = node2;
-    this.MerkleTree = new MerkleTree(web3);
+    //this.MerkleTree = new MerkleTree(web3);
     this.data = {};
   }
 
@@ -86,7 +86,7 @@ class Weights {
       top20[key] = ((top20[key] / totalBalance) * 100).toFixed(3) + "% of token holder vote";
     }
     console.table(top20);
-    return { numberOfHolders, totalBalance };
+    return { numberOfHolders, totalBalance, array };
   }
 
 
@@ -143,7 +143,7 @@ class Weights {
       top20[key] = ((top20[key] / totalReports) * 100).toFixed(3) + "% of reporter vote";
     }
     console.table(top20);
-    return { numberOfReporters, totalReports };
+    return { numberOfReporters, totalReports, array };
   }
 
   async getUsers(blockNumber) {
@@ -211,9 +211,9 @@ class Weights {
       top20[key] = ((top20[key] / totalTips) * 100).toFixed(3) + "% of user vote";
     }
     console.table(top20);
-    return { numberOfUsers, totalTips };
+    return { numberOfUsers, totalTips, array };
   }
-
+/*
   async getAllWeights(blockNumber) {
     let reportAccountMap = [];
     let userAccountMap = [];
@@ -283,7 +283,7 @@ class Weights {
     for (key in balanceTop20) {
       balanceTop20[key] = ((balanceTop20[key] / totalBalance) * 100).toFixed(3) + "% of token holder vote";
     }
-    console.table(balaneTop20);
+    console.table(balanceTop20);
 
     console.log("getting reports..")
     // set provider for all later instances to use
@@ -315,7 +315,7 @@ class Weights {
     for (key in holderAccountMap) {
       // get number of tips by user
       tips = await this.autopayContract.methods.getTipsByAddress(key).call({}, blockNumber);
-      tips = tips / 1e18;
+      // tips = tips / 1e18;
       // make map{ address : number of tips}
       if (tips > 0) {
         tipMap[key] = Number(tips);
@@ -333,7 +333,7 @@ class Weights {
       userTop20[key] = ((userTop20[key] / totalTips) * 100).toFixed(3) + "% of user vote";
     }
     console.table(userTop20);
-  }
+  }*/
 
 
   /*
