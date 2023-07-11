@@ -6,9 +6,11 @@ const { ethers } = require("hardhat")
 const { abi, bytecode } = require("usingtellor/artifacts/contracts/TellorPlayground.sol/TellorPlayground.json")
 const h = require("usingtellor/test/helpers/helpers.js")
 const assert = require('chai').assert
+//const MerkleTreeJS = require("../src/MerkleTree")
+//const MerkleTree = new MerkleTreeJS(Web3)
 const Weights = require("../src/Weights")
 require("dotenv").config();
-//npx hardhat run scripts/getReporters.js --network mainnet
+//npx hardhat run scripts/getBalanceMap.js --network mainnet
 
 const oracleAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0" // all networks
 
@@ -20,6 +22,7 @@ async function getReporterList(node2) {
     console.log("blockNumber", newestBlock);
     console.log("reporter stats", list);
 }
+
 
 getReporterList(process.env.NODE_URL_MATIC)
     .then(() => process.exit(0))
